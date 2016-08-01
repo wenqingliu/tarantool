@@ -8,7 +8,7 @@ file = io.open("rtree_benchmark.res", "w")
 
 s = box.schema.space.create('rtreebench')
 _ = s:create_index('primary')
-_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'array'}})
+_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'}})
 
 file:write(" *** 2D *** \n")
 rect_width = 180 / math.pow(n_records, 1 / 2)
@@ -56,7 +56,7 @@ dimension = 8;
 
 s = box.schema.space.create('rtreebench');
 _ = s:create_index('primary');
-_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'array'}, dimension = dimension});
+_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'}, dimension = dimension});
 
 file:write(" *** 8D *** \n")
 rect_width = 180 / math.pow(n_records, 1 / dimension)

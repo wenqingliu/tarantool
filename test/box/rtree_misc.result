@@ -8,94 +8,94 @@ s = box.schema.space.create('spatial')
 ---
 ...
 -- rtree index as primary key must be forbidden (unique)
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {1, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {1, 'NUMBER[]'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': RTREE index
     can not be unique'
 ...
 -- any non-unique index as primary key must be forbidden
-i = s:create_index('spatial', { type = 'hash', unique = false, parts = {1, 'num'}})
+i = s:create_index('spatial', { type = 'hash', unique = false, parts = {1, 'UNSIGNED'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': primary
     key must be unique'
 ...
-i = s:create_index('spatial', { type = 'tree', unique = false, parts = {1, 'num'}})
+i = s:create_index('spatial', { type = 'tree', unique = false, parts = {1, 'UNSIGNED'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': primary
     key must be unique'
 ...
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'NUMBER[]'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': primary
     key must be unique'
 ...
 -- tree and hash indexes over array field is not possible
-i = s:create_index('primary', { type = 'tree', parts = {1, 'array'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'NUMBER[]'}})
 ---
 - error: 'Can''t create or modify index ''primary'' in space ''spatial'': ARRAY field
     type is not supported'
 ...
-i = s:create_index('primary', { type = 'hash', parts = {1, 'array'}})
+i = s:create_index('primary', { type = 'hash', parts = {1, 'NUMBER[]'}})
 ---
 - error: 'Can''t create or modify index ''primary'' in space ''spatial'': ARRAY field
     type is not supported'
 ...
 -- normal indexes
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 ---
 ...
-i = s:create_index('secondary', { type = 'hash', parts = {2, 'num'}})
+i = s:create_index('secondary', { type = 'hash', parts = {2, 'UNSIGNED'}})
 ---
 ...
 -- adding a tuple with array instead of num will fail
 i = s:insert{{1, 2, 3}, 4}
 ---
-- error: 'Tuple field 1 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 1 type does not match one required by operation: expected UNSIGNED'
 ...
 i = s:insert{1, {2, 3, 4}}
 ---
-- error: 'Tuple field 2 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 2 type does not match one required by operation: expected UNSIGNED'
 ...
 -- rtree index must be one-part
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'array', 2, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'NUMBER[]', 2, 'NUMBER[]'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': RTREE index
     key can not be multipart'
 ...
 -- unique rtree index is not possible
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'NUMBER[]'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': RTREE index
     can not be unique'
 ...
 -- num rtree index is not possible
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'num'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'UNSIGNED'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': RTREE index
     field type must be ARRAY'
 ...
 -- str rtree index is not possible
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'str'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'STRING'}})
 ---
 - error: 'Can''t create or modify index ''spatial'' in space ''spatial'': RTREE index
     field type must be ARRAY'
 ...
 -- normal rtree index
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}})
 ---
 ...
 -- inserting wrong values (should fail)
 s:insert{1, 2, 3}
 ---
-- error: 'Tuple field 3 type does not match one required by operation: expected ARRAY'
+- error: 'Tuple field 3 type does not match one required by operation: expected NUMBER[]'
 ...
 s:insert{1, 2, "3"}
 ---
-- error: 'Tuple field 3 type does not match one required by operation: expected ARRAY'
+- error: 'Tuple field 3 type does not match one required by operation: expected NUMBER[]'
 ...
 s:insert{1, 2, nil, 3}
 ---
-- error: 'Tuple field 3 type does not match one required by operation: expected ARRAY'
+- error: 'Tuple field 3 type does not match one required by operation: expected NUMBER[]'
 ...
 s:insert{1, 2, {}}
 ---
@@ -104,23 +104,23 @@ s:insert{1, 2, {}}
 ...
 s:insert{1, 2, {"3", "4", "5", "6"}}
 ---
-- error: 'Tuple field 1 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 1 type does not match one required by operation: expected NUMBER'
 ...
 s:insert{1, 2, {nil, 4, 5, 6}}
 ---
-- error: 'Tuple field 1 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 1 type does not match one required by operation: expected NUMBER'
 ...
 s:insert{1, 2, {3, {4}, 5, 6}}
 ---
-- error: 'Tuple field 2 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 2 type does not match one required by operation: expected NUMBER'
 ...
 s:insert{1, 2, {3, 4, {}, 6}}
 ---
-- error: 'Tuple field 3 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 3 type does not match one required by operation: expected NUMBER'
 ...
 s:insert{1, 2, {3, 4, 5, "6"}}
 ---
-- error: 'Tuple field 4 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 4 type does not match one required by operation: expected NUMBER'
 ...
 s:insert{1, 2, {3}}
 ---
@@ -215,15 +215,16 @@ s = box.schema.space.create('vinyl', {engine = 'vinyl'})
 ---
 ...
 -- rtree indexes are not enabled in vinyl
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'NUMNBER[]'}})
 ---
-- error: Unsupported index type supplied for index 'spatial' in space 'vinyl'
+- error: 'Can''t create or modify index ''spatial'' in space ''vinyl'': unknown field
+    type'
 ...
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 ---
 ...
 -- ... even secondary
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'NUMBER[]'}})
 ---
 - error: Unsupported index type supplied for index 'spatial' in space 'vinyl'
 ...
@@ -234,10 +235,10 @@ s:drop()
 s = box.schema.space.create('spatial', {temporary = true})
 ---
 ...
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 ---
 ...
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}})
 ---
 ...
 s:insert{1, 2, {3, 4, 5, 6}}
@@ -255,10 +256,10 @@ s:drop()
 s = box.schema.space.create('spatial')
 ---
 ...
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 ---
 ...
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}})
 ---
 ...
 for i = 1,10 do s:insert{i, i, {i, i, i + 1, i + 1}} end
@@ -307,10 +308,10 @@ s:drop()
 s = box.schema.space.create('spatial')
 ---
 ...
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 ---
 ...
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}, dimension = 4})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}, dimension = 4})
 ---
 ...
 for i = 1,10 do s:insert{i, i, {i, i, i, i, i + 1, i + 1, i + 1, i + 1}} end
@@ -357,7 +358,7 @@ s:drop()
 ---
 ...
 -- distance type
-iopts = { type = 'rtree', unique = false, parts = {2, 'array'} }
+iopts = { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'} }
 ---
 ...
 iopts['distance'] = 'euclid'
@@ -366,7 +367,7 @@ iopts['distance'] = 'euclid'
 s = box.schema.space.create('spatial')
 ---
 ...
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 ---
 ...
 i = s:create_index('spatial', iopts)
@@ -403,7 +404,7 @@ s.index.spatial:select({{0, 0}}, {iterator = 'neighbor'})
 s:drop()
 ---
 ...
-iopts = { type = 'rtree', unique = false, parts = {2, 'array'} }
+iopts = { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'} }
 ---
 ...
 iopts['distance'] = 'manhattan'
@@ -412,7 +413,7 @@ iopts['distance'] = 'manhattan'
 s = box.schema.space.create('spatial')
 ---
 ...
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 ---
 ...
 i = s:create_index('spatial', iopts)
@@ -491,30 +492,30 @@ i = s:create_index('p')
 ---
 ...
 -- dimension too big
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}, dimension = 21})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}, dimension = 21})
 ---
 - error: 'Index ''s'' (RTREE) of space ''s'' (memtx) does not support dimension (21):
     must belong to range [1, 20]'
 ...
 -- dimension too low
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}, dimension = 0})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}, dimension = 0})
 ---
 - error: 'Index ''s'' (RTREE) of space ''s'' (memtx) does not support dimension (0):
     must belong to range [1, 20]'
 ...
 -- cant be unique
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}, unique = true})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}, unique = true})
 ---
 - error: 'Can''t create or modify index ''s'' in space ''s'': RTREE index can not
     be unique'
 ...
 -- wrong parts
-i = s:create_index('s', {type = 'rtree', parts = {2, 'num'}})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'UNSIGNED'}})
 ---
 - error: 'Can''t create or modify index ''s'' in space ''s'': RTREE index field type
     must be ARRAY'
 ...
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array', 3, 'array'}})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]', 3, 'NUMBER[]'}})
 ---
 - error: 'Can''t create or modify index ''s'' in space ''s'': RTREE index key can
     not be multipart'
@@ -529,7 +530,7 @@ i.dimension
 ...
 i.parts
 ---
-- - type: ARRAY
+- - type: NUMBER[]
     fieldno: 2
 ...
 i:drop()
@@ -540,17 +541,17 @@ function f(t) local r = {} for i, v in ipairs(t) do r[i] = v end r[1] = 0 return
 ---
 ...
 -- new index through inserting to _index space
-f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'array'}}})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'NUMBER[]'}}})
 ---
-- [0, 2, 's', 'rtree', {'unique': false}, [[2, 'array']]]
+- [0, 2, 's', 'rtree', {'unique': false}, [[2, 'NUMBER[]']]]
 ...
 s.index.s:drop()
 ---
 ...
 -- support of 1.6.5 _index structure
-f(box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'array'})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'NUMBER[]'})
 ---
-- [0, 2, 's', 'rtree', 0, 1, 2, 'array']
+- [0, 2, 's', 'rtree', 0, 1, 2, 'NUMBER[]']
 ...
 s.index.s:drop()
 ---
@@ -559,33 +560,33 @@ s.index.s:drop()
 empty_map = setmetatable({}, {__serialize = 'map'})
 ---
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', nil, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', nil, {{2, 'NUMBER[]'}}}
 ---
 - error: 'Wrong record in _index space: got {number, number, string, string, unknown,
     array}, expected {space id (number), index id (number), name (string), type (string),
     options (map), parts (array)}'
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', {}, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {}, {{2, 'NUMBER[]'}}}
 ---
 - error: 'Wrong record in _index space: got {number, number, string, string, array,
     array}, expected {space id (number), index id (number), name (string), type (string),
     options (map), parts (array)}'
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', empty_map, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', empty_map, {{2, 'NUMBER[]'}}}
 ---
 - error: 'Can''t create or modify index ''s'' in space ''s'': RTREE index can not
     be unique'
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 22}, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 22}, {{2, 'NUMBER[]'}}}
 ---
 - error: 'Index ''s'' (RTREE) of space ''s'' (memtx) does not support dimension (22):
     must belong to range [1, 20]'
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 'dimension'}, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 'dimension'}, {{2, 'NUMBER[]'}}}
 ---
-- error: 'Wrong index options (field 4): ''dimension'' must be unsigned int'
+- error: 'Wrong index options (field 4): ''dimension'' must be unsigned'
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'num'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'UNSIGNED'}}}
 ---
 - error: 'Can''t create or modify index ''s'' in space ''s'': RTREE index field type
     must be ARRAY'
@@ -599,11 +600,11 @@ box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{'no','time'}}
 - error: 'Wrong index parts (field 5): field id must be an integer; expected field1
     id (number), field1 type (string), ...'
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, distance = 'lobachevsky'}, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, distance = 'lobachevsky'}, {{2, 'NUMBER[]'}}}
 ---
 - error: 'Wrong index options (field 4): distance must be either ''euclid'' or ''manhattan'''
 ...
-box.space._index:insert{s.id, 2, 's', 'rtee', {unique = false}, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtee', {unique = false}, {{2, 'NUMBER[]'}}}
 ---
 - error: Unsupported index type supplied for index 's' in space 's'
 ...
@@ -616,7 +617,7 @@ box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'thing'}
 ---
 - error: 'Can''t create or modify index ''s'' in space ''s'': unknown field type'
 ...
-box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'array', 'wtf'}
+box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'NUMBER[]', 'wtf'}
 ---
 - error: 'Wrong record in _index space: got {number, number, string, string, number,
     number, number, string, string}, expected {space id (number), index id (number),
@@ -628,20 +629,20 @@ box.space._index:insert{s.id, 2, 's', 'rtree', 0, 0}
 - error: 'Can''t create or modify index ''s'' in space ''s'': part count must be positive'
 ...
 -- unknown args checked
-f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, holy = 'cow'}, {{2, 'array'}}})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, holy = 'cow'}, {{2, 'NUMBER[]'}}})
 ---
 - error: 'Wrong index options (field 4): unexpected option ''holy'''
 ...
 -- unknown args ignored
-f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'array', {part = 'opts'}}}})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'NUMBER[]', {part = 'opts'}}}})
 ---
-- [0, 2, 's', 'rtree', {'unique': false}, [[2, 'array', {'part': 'opts'}]]]
+- [0, 2, 's', 'rtree', {'unique': false}, [[2, 'NUMBER[]', {'part': 'opts'}]]]
 ...
 s.index.s:drop()
 ---
 ...
 -- alter
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}})
 ---
 ...
 i:alter{type = 'tree' }

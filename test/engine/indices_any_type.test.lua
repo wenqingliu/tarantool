@@ -92,7 +92,7 @@ s1:select{}
 s1:drop()
 
 s2 = box.schema.space.create('my_space3', { engine = engine })
-i2_1 = s2:create_index('my_space3_idx1', {type='TREE', parts={1, 'SCALAR', 2, 'INT', 3, 'NUMBER'}, unique=true})
+i2_1 = s2:create_index('my_space3_idx1', {type='TREE', parts={1, 'SCALAR', 2, 'INTEGER', 3, 'NUMBER'}, unique=true})
 
 s2:insert({10, 1, -1, 'z', true})
 s2:insert({11, 2, 2, 'g', false})
@@ -144,7 +144,7 @@ s2:drop()
 mp = require('msgpack')
 
 s4 = box.schema.space.create('my_space5', { engine = engine })
-i4_1 = s4:create_index('my_space5_idx1', {type='TREE', parts={1, 'SCALAR', 2, 'INT', 3, 'NUMBER'}, unique=true})
+i4_1 = s4:create_index('my_space5_idx1', {type='TREE', parts={1, 'SCALAR', 2, 'INTEGER', 3, 'NUMBER'}, unique=true})
 s4:insert({mp.NULL, 1, 1, 1})
 s4:insert({2, mp.NULL, 2, 2}) -- all nulls must fail
 s4:insert({3, 3, mp.NULL, 3})
@@ -155,7 +155,7 @@ s4:drop()
 -- Test for nonunique indices
 
 s5 = box.schema.space.create('my_space6', { engine = engine })
-i5_1 = s5:create_index('my_space6_idx1', {type='TREE', parts={1, 'NUM'}, unique=true})
+i5_1 = s5:create_index('my_space6_idx1', {type='TREE', parts={1, 'UNSIGNED'}, unique=true})
 i5_2 = s5:create_index('my_space6_idx2', {type='TREE', parts={2, 'SCALAR'}, unique=false})
 
 test_run:cmd("setopt delimiter ';'");

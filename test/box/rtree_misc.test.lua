@@ -4,40 +4,40 @@ test_run = env.new()
 s = box.schema.space.create('spatial')
 
 -- rtree index as primary key must be forbidden (unique)
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {1, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {1, 'NUMBER[]'}})
 
 -- any non-unique index as primary key must be forbidden
-i = s:create_index('spatial', { type = 'hash', unique = false, parts = {1, 'num'}})
-i = s:create_index('spatial', { type = 'tree', unique = false, parts = {1, 'num'}})
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'array'}})
+i = s:create_index('spatial', { type = 'hash', unique = false, parts = {1, 'UNSIGNED'}})
+i = s:create_index('spatial', { type = 'tree', unique = false, parts = {1, 'UNSIGNED'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'NUMBER[]'}})
 
 -- tree and hash indexes over array field is not possible
-i = s:create_index('primary', { type = 'tree', parts = {1, 'array'}})
-i = s:create_index('primary', { type = 'hash', parts = {1, 'array'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'NUMBER[]'}})
+i = s:create_index('primary', { type = 'hash', parts = {1, 'NUMBER[]'}})
 
 -- normal indexes
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
-i = s:create_index('secondary', { type = 'hash', parts = {2, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
+i = s:create_index('secondary', { type = 'hash', parts = {2, 'UNSIGNED'}})
 
 -- adding a tuple with array instead of num will fail
 i = s:insert{{1, 2, 3}, 4}
 i = s:insert{1, {2, 3, 4}}
 
 -- rtree index must be one-part
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'array', 2, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {1, 'NUMBER[]', 2, 'NUMBER[]'}})
 
 -- unique rtree index is not possible
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'NUMBER[]'}})
 
 -- num rtree index is not possible
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'num'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'UNSIGNED'}})
 
 -- str rtree index is not possible
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'str'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'STRING'}})
 
 
 -- normal rtree index
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}})
 
 -- inserting wrong values (should fail)
 s:insert{1, 2, 3}
@@ -86,24 +86,24 @@ s:drop()
 
 s = box.schema.space.create('vinyl', {engine = 'vinyl'})
 -- rtree indexes are not enabled in vinyl
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'array'}})
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'NUMNBER[]'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 -- ... even secondary
-i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'array'}})
+i = s:create_index('spatial', { type = 'rtree', unique = true, parts = {3, 'NUMBER[]'}})
 s:drop()
 
 -- rtree in temp space must work fine
 s = box.schema.space.create('spatial', {temporary = true})
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}})
 s:insert{1, 2, {3, 4, 5, 6}}
 s.index.spatial:select({0, 0, 10, 10}, {iterator = 'le'})
 s:drop()
 
 -- snapshot test
 s = box.schema.space.create('spatial')
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}})
 for i = 1,10 do s:insert{i, i, {i, i, i + 1, i + 1}} end
 box.snapshot()
 i:select({0, 0}, {iterator = 'neighbor'})
@@ -116,8 +116,8 @@ i:select({0, 0}, {iterator = 'neighbor'})
 s:drop()
 
 s = box.schema.space.create('spatial')
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
-i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'array'}, dimension = 4})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
+i = s:create_index('spatial', { type = 'rtree', unique = false, parts = {3, 'NUMBER[]'}, dimension = 4})
 for i = 1,10 do s:insert{i, i, {i, i, i, i, i + 1, i + 1, i + 1, i + 1}} end
 box.snapshot()
 i:select({0, 0, 0, 0}, {iterator = 'neighbor'})
@@ -130,10 +130,10 @@ i:select({0, 0, 0, 0}, {iterator = 'neighbor'})
 s:drop()
 
 -- distance type
-iopts = { type = 'rtree', unique = false, parts = {2, 'array'} }
+iopts = { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'} }
 iopts['distance'] = 'euclid'
 s = box.schema.space.create('spatial')
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 i = s:create_index('spatial', iopts)
 s:insert{1, {0, 5}}
 s:insert{2, {5, 0}}
@@ -143,10 +143,10 @@ s:insert{5, {0, 8}}
 s.index.spatial:select({{0, 0}}, {iterator = 'neighbor'})
 s:drop()
 
-iopts = { type = 'rtree', unique = false, parts = {2, 'array'} }
+iopts = { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'} }
 iopts['distance'] = 'manhattan'
 s = box.schema.space.create('spatial')
-i = s:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+i = s:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 i = s:create_index('spatial', iopts)
 s:insert{1, {0, 5}}
 s:insert{2, {5, 0}}
@@ -175,17 +175,17 @@ s = box.schema.space.create('s')
 i = s:create_index('p')
 
 -- dimension too big
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}, dimension = 21})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}, dimension = 21})
 
 -- dimension too low
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}, dimension = 0})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}, dimension = 0})
 
 -- cant be unique
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}, unique = true})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}, unique = true})
 
 -- wrong parts
-i = s:create_index('s', {type = 'rtree', parts = {2, 'num'}})
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array', 3, 'array'}})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'UNSIGNED'}})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]', 3, 'NUMBER[]'}})
 
 -- defaults test
 i = s:create_index('s', { type = 'rtree' })
@@ -197,38 +197,38 @@ i:drop()
 function f(t) local r = {} for i, v in ipairs(t) do r[i] = v end r[1] = 0 return setmetatable (r, {__serialize = 'seq'}) end
 
 -- new index through inserting to _index space
-f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'array'}}})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'NUMBER[]'}}})
 s.index.s:drop()
 -- support of 1.6.5 _index structure
-f(box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'array'})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'NUMBER[]'})
 s.index.s:drop()
 
 -- with wrong args
 empty_map = setmetatable({}, {__serialize = 'map'})
-box.space._index:insert{s.id, 2, 's', 'rtree', nil, {{2, 'array'}}}
-box.space._index:insert{s.id, 2, 's', 'rtree', {}, {{2, 'array'}}}
-box.space._index:insert{s.id, 2, 's', 'rtree', empty_map, {{2, 'array'}}}
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 22}, {{2, 'array'}}}
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 'dimension'}, {{2, 'array'}}}
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'num'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', nil, {{2, 'NUMBER[]'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {}, {{2, 'NUMBER[]'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', empty_map, {{2, 'NUMBER[]'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 22}, {{2, 'NUMBER[]'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, dimension = 'dimension'}, {{2, 'NUMBER[]'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'UNSIGNED'}}}
 box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'time'}}}
 box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{'no','time'}}}
-box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, distance = 'lobachevsky'}, {{2, 'array'}}}
-box.space._index:insert{s.id, 2, 's', 'rtee', {unique = false}, {{2, 'array'}}}
+box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, distance = 'lobachevsky'}, {{2, 'NUMBER[]'}}}
+box.space._index:insert{s.id, 2, 's', 'rtee', {unique = false}, {{2, 'NUMBER[]'}}}
 box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{}}}
 box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'thing'}
-box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'array', 'wtf'}
+box.space._index:insert{s.id, 2, 's', 'rtree', 0, 1, 2, 'NUMBER[]', 'wtf'}
 box.space._index:insert{s.id, 2, 's', 'rtree', 0, 0}
 
 -- unknown args checked
-f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, holy = 'cow'}, {{2, 'array'}}})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false, holy = 'cow'}, {{2, 'NUMBER[]'}}})
 
 -- unknown args ignored
-f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'array', {part = 'opts'}}}})
+f(box.space._index:insert{s.id, 2, 's', 'rtree', {unique = false}, {{2, 'NUMBER[]', {part = 'opts'}}}})
 s.index.s:drop()
 
 -- alter
-i = s:create_index('s', {type = 'rtree', parts = {2, 'array'}})
+i = s:create_index('s', {type = 'rtree', parts = {2, 'NUMBER[]'}})
 i:alter{type = 'tree' }
 i:alter{dimension = 3 }
 s:insert{1, {1, 1} }

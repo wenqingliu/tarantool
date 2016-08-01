@@ -1,6 +1,6 @@
 s = box.schema.space.create('spatial')
 _ = s:create_index('primary')
-spatial = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'array'}})
+spatial = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'}})
 
 spatial.type
 
@@ -27,7 +27,7 @@ s:drop()
 
 s = box.schema.space.create('spatial')
 _ = s:create_index('primary')
-spatial = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'array'}, dimension = 8})
+spatial = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'}, dimension = 8})
 
 spatial.type
 

@@ -5,8 +5,8 @@ local INDEX_NO = 1
 
 function create_space()
     local space = box.schema.create_space('tweedledum')
-    space:create_index('primary', { type = 'hash', parts = {1, 'num'}, unique = true })
-    space:create_index('bitset', { type = 'bitset', parts = {2, 'num'}, unique = false })
+    space:create_index('primary', { type = 'hash', parts = {1, 'UNSIGNED'}, unique = true })
+    space:create_index('bitset', { type = 'bitset', parts = {2, 'UNSIGNED'}, unique = false })
 end
 
 function fill(...)

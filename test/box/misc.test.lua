@@ -184,8 +184,8 @@ test_run:cmd("clear filter")
 -- https://github.com/tarantool/tarantool/issues/1109
 -- Update via a secondary key breaks recovery
 s = box.schema.create_space('test')
-i1 = s:create_index('test1', {parts = {1, 'num'}})
-i2 = s:create_index('test2', {parts = {2, 'num'}})
+i1 = s:create_index('test1', {parts = {1, 'UNSIGNED'}})
+i2 = s:create_index('test2', {parts = {2, 'UNSIGNED'}})
 s:insert{1, 2, 3}
 s:insert{5, 8, 13}
 i2:update({2}, {{'+', 3, 3}})

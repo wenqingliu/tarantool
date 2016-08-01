@@ -1,8 +1,8 @@
 utils = dofile('utils.lua')
 
 hash = box.schema.space.create('tweedledum')
-tmp = hash:create_index('primary', { type = 'hash', parts = {1, 'num', 2, 'str', 3, 'num'}, unique = true })
-tmp = hash:create_index('unique', { type = 'hash', parts = {3, 'num', 5, 'num'}, unique = true })
+tmp = hash:create_index('primary', { type = 'hash', parts = {1, 'UNSIGNED', 2, 'STRING', 3, 'UNSIGNED'}, unique = true })
+tmp = hash:create_index('unique', { type = 'hash', parts = {3, 'UNSIGNED', 5, 'UNSIGNED'}, unique = true })
 
 -- insert rows
 hash:insert{0, 'foo', 0, '', 1}

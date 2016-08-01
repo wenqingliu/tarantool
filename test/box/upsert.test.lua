@@ -124,7 +124,7 @@ test_run:cmd("setopt delimiter ''");
 engine = 'memtx'
 s = box.schema.space.create('s', {engine = engine})
 index1 = s:create_index('i1')
-if engine == 'memtx' then index2 = s:create_index('i2', {parts = {2, 'str'}, unique = false}) end
+if engine == 'memtx' then index2 = s:create_index('i2', {parts = {2, 'STRING'}, unique = false}) end
 
 t = {1, '1', 1, 'qwerty'}
 s:insert(t)

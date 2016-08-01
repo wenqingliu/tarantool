@@ -5,7 +5,7 @@ inspector:cmd("push filter '"..engine.."' to 'engine'")
 
 -- iterator (str)
 space = box.schema.space.create('test', { engine = engine })
-index = space:create_index('primary', { type = 'tree', parts = {1, 'str'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'} })
 for key = 1, 100 do space:replace({tostring(key)}) end
 t = {} for state, v in index:pairs({}, {iterator = 'ALL'}) do table.insert(t, v) end
 t
@@ -28,7 +28,7 @@ space:drop()
 
 -- iterator (num)
 space = box.schema.space.create('test', { engine = engine })
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'} })
 for key = 1, 100 do space:replace({key}) end
 t = {} for state, v in index:pairs({}, {iterator = 'ALL'}) do table.insert(t, v) end
 t
@@ -51,7 +51,7 @@ space:drop()
 
 -- iterator multi-part (num, num)
 space = box.schema.space.create('test', { engine = engine })
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num', 2, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED', 2, 'UNSIGNED'} })
 for key = 1, 100 do space:replace({key, key}) end
 t = {} for state, v in index:pairs({}, {iterator = 'ALL'}) do table.insert(t, v) end
 t
@@ -73,7 +73,7 @@ space:drop()
 
 -- iterator with tuple.new
 space = box.schema.space.create('test', { engine = engine })
-index = space:create_index('primary', { type = 'tree', parts = {1, 'str'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'} })
 for key = 1, 100 do space:replace({tostring(key)}) end
 t = {} for state, v in index:pairs(box.tuple.new{}, {iterator = 'ALL'}) do table.insert(t, v) end
 t

@@ -7,7 +7,7 @@ test_run:cmd("push filter '"..engine.."' to 'engine'")
 --------------------------------------------------------------------------------
 
 s1 = box.schema.space.create('tree_prefix_search', { engine = engine })
-_ = s1:create_index('primary', { type = 'tree', parts = {1, 'str'}})
+_ = s1:create_index('primary', { type = 'tree', parts = {1, 'STRING'}})
 
 _ = s1:replace{''}
 _ = s1:replace{'abcd'}
@@ -32,7 +32,7 @@ s1 = nil
 -------------------------------------------------------------------------------
 
 space = box.schema.space.create('uint', { engine = engine })
-pk = space:create_index('primary', { type = 'tree', parts = {1, 'num'}})
+pk = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}})
 
 for i=1,9 do space:replace{i} end
 
@@ -88,7 +88,7 @@ pk = nil
 -------------------------------------------------------------------------------
 
 space = box.schema.space.create('sparse_uint', { engine = engine })
-pk = space:create_index('primary', { type = 'tree', parts = {3, 'num'}})
+pk = space:create_index('primary', { type = 'tree', parts = {3, 'UNSIGNED'}})
 
 for i=1,9 do space:replace{'', 0, i} end
 space:insert{'', 0, 1} -- conflict
@@ -144,8 +144,8 @@ pk = nil
 -- single-part (string)
 -------------------------------------------------------------------------------
 
-space = box.schema.space.create('str', { engine = engine })
-pk = space:create_index('primary', { type = 'tree', parts = {1, 'str'}})
+space = box.schema.space.create('STRING', { engine = engine })
+pk = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'}})
 
 for i=1,9 do space:replace{'0'..i} end
 
@@ -201,7 +201,7 @@ pk = nil
 -------------------------------------------------------------------------------
 
 space = box.schema.space.create('uint_str', { engine = engine })
-pk = space:create_index('primary', { type = 'tree', parts = {1, 'num', 2, 'str'}})
+pk = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED', 2, 'STRING'}})
 
 for i=1,9 do for j=1,3 do space:replace({i, '0'..j}) end end
 
@@ -286,7 +286,7 @@ pk = nil
 -------------------------------------------------------------------------------
 
 space = box.schema.space.create('str_uint', { engine = engine })
-pk = space:create_index('primary', { type = 'tree', parts = {1, 'str', 2, 'num'}})
+pk = space:create_index('primary', { type = 'tree', parts = {1, 'STRING', 2, 'UNSIGNED'}})
 
 for i=1,9 do for j=1,3 do space:replace({'0'..i, j}) end end
 
@@ -373,7 +373,7 @@ pk = nil
 -------------------------------------------------------------------------------
 
 space = box.schema.space.create('sparse_str_uint', { engine = engine })
-pk = space:create_index('primary', { type = 'tree', parts = {3, 'str', 1, 'num'}})
+pk = space:create_index('primary', { type = 'tree', parts = {3, 'STRING', 1, 'UNSIGNED'}})
 
 for i=1,9 do for j=1,3 do space:replace({i, '', '0'..j}) end end
 
@@ -463,13 +463,13 @@ pk = nil
 -------------------------------------------------------------------------------
 
 space = box.schema.space.create('tweedledum', { engine = engine })
-i0 = space:create_index('primary', { type = 'tree', parts = {1, 'num'}, unique = true })
-i1 = space:create_index('i1', { type = 'tree', parts = {2, 'num'}, unique = false })
-i2 = space:create_index('i2', { type = 'tree', parts = {3, 'num'}, unique = false })
-i3 = space:create_index('i3', { type = 'tree', parts = {4, 'str', 5, 'str'}, unique = false })
-i4 = space:create_index('i4', { type = 'tree', parts = {7, 'str', 6, 'str'}, unique = false })
-i5 = space:create_index('i5', { type = 'tree', parts = {9, 'num'}, unique = false })
-i6 = space:create_index('i6', { type = 'tree', parts = {7, 'str', 6, 'str', 4, 'str', 5, 'str', 9, 'num'}, unique = true })
+i0 = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}, unique = true })
+i1 = space:create_index('i1', { type = 'tree', parts = {2, 'UNSIGNED'}, unique = false })
+i2 = space:create_index('i2', { type = 'tree', parts = {3, 'UNSIGNED'}, unique = false })
+i3 = space:create_index('i3', { type = 'tree', parts = {4, 'STRING', 5, 'STRING'}, unique = false })
+i4 = space:create_index('i4', { type = 'tree', parts = {7, 'STRING', 6, 'STRING'}, unique = false })
+i5 = space:create_index('i5', { type = 'tree', parts = {9, 'UNSIGNED'}, unique = false })
+i6 = space:create_index('i6', { type = 'tree', parts = {7, 'STRING', 6, 'STRING', 4, 'STRING', 5, 'STRING', 9, 'UNSIGNED'}, unique = true })
 
 space:insert{0, 0, 100, 'Joe', 'Sixpack', 'Drinks', 'Amstel', 'bar', 2000}
 space:insert{1, 1, 200, 'Joe', 'Sixpack', 'Drinks', 'Heineken', 'bar', 2001}
@@ -531,7 +531,7 @@ sort_cmp = nil
 -------------------------------------------------------------------------------
 
 space = box.schema.space.create('invalid', { engine = engine })
-pk = space:create_index('primary', { type = 'tree', parts = {1, 'str'}})
+pk = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'}})
 
 pk:select({}, {iterator = 'BITS_ALL_SET'})
 

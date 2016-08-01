@@ -11,10 +11,10 @@ test_run:cmd("push filter ".."'\\.lua.*:[0-9]+: ' to '.lua...\"]:<line>: '")
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'hash', parts = {1, 'str'}, unique = true })
+tmp = space:create_index('primary', { type = 'hash', parts = {1, 'STRING'}, unique = true })
 ---
 ...
-tmp = space:create_index('minmax', { type = 'tree', parts = {2, 'str', 3, 'str'}, unique = true })
+tmp = space:create_index('minmax', { type = 'tree', parts = {2, 'STRING', 3, 'STRING'}, unique = true })
 ---
 ...
 space:insert{'brave', 'new', 'world'}
@@ -127,10 +127,10 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'hash', parts = {1, 'num'}, unique = true })
+tmp = space:create_index('primary', { type = 'hash', parts = {1, 'UNSIGNED'}, unique = true })
 ---
 ...
-tmp = space:create_index('minmax', { type = 'tree', parts = {2, 'str', 3, 'str'}, unique = false })
+tmp = space:create_index('minmax', { type = 'tree', parts = {2, 'STRING', 3, 'STRING'}, unique = false })
 ---
 ...
 space:insert{1234567, 'new', 'world'}
@@ -178,7 +178,7 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type  = 'tree', parts = {1, 'num'}, unique = true })
+tmp = space:create_index('primary', { type  = 'tree', parts = {1, 'UNSIGNED'}, unique = true })
 ---
 ...
 space:insert{tonumber64('18446744073709551615'), 'magic'}
@@ -285,10 +285,10 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'tree', parts = {1, 'num'}, unique = true })
+tmp = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}, unique = true })
 ---
 ...
-tmp = space:create_index('range', { type = 'tree', parts = {2, 'num', 1, 'num'}, unique = true })
+tmp = space:create_index('range', { type = 'tree', parts = {2, 'UNSIGNED', 1, 'UNSIGNED'}, unique = true })
 ---
 ...
 space:insert{0, 0}
@@ -373,10 +373,10 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'tree', parts = {1, 'str'}, unique = true })
+tmp = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'}, unique = true })
 ---
 ...
-tmp = space:create_index('i1', { type = 'tree', parts = {2, 'str', 3, 'str'}, unique = true })
+tmp = space:create_index('i1', { type = 'tree', parts = {2, 'STRING', 3, 'STRING'}, unique = true })
 ---
 ...
 pid = 1
@@ -509,10 +509,10 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'hash', parts = {1, 'num'}, unique = true })
+tmp = space:create_index('primary', { type = 'hash', parts = {1, 'UNSIGNED'}, unique = true })
 ---
 ...
-tmp = space:create_index('i1', { type = 'tree', parts = {2, 'num', 3, 'num'}, unique = false })
+tmp = space:create_index('i1', { type = 'tree', parts = {2, 'UNSIGNED', 3, 'UNSIGNED'}, unique = false })
 ---
 ...
 space:insert{1, 1, 1}
@@ -620,7 +620,7 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'hash', parts = {1, 'str'}, unique = true })
+tmp = space:create_index('primary', { type = 'hash', parts = {1, 'STRING'}, unique = true })
 ---
 ...
 t = space:insert{'1', '2', '3', '4', '5', '6', '7'}
@@ -803,7 +803,7 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'tree', parts = {1, 'num'}, unique = true })
+tmp = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}, unique = true })
 ---
 ...
 dofile('push.lua')
@@ -887,15 +887,15 @@ space:drop()
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'tree', parts = {3, 'num', 2, 'num'}, unique = true })
+tmp = space:create_index('primary', { type = 'tree', parts = {3, 'UNSIGNED', 2, 'UNSIGNED'}, unique = true })
 ---
 ...
 -- Print key fields in pk
 space.index['primary'].parts
 ---
-- - type: NUM
+- - type: UNSIGNED
     fieldno: 3
-  - type: NUM
+  - type: UNSIGNED
     fieldno: 2
 ...
 space:insert{1, 2, 3, 4}
@@ -937,10 +937,10 @@ dofile('index_random_test.lua')
 space = box.schema.space.create('tweedledum')
 ---
 ...
-tmp = space:create_index('primary', { type = 'tree', parts = {1, 'num'}, unique = true })
+tmp = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'}, unique = true })
 ---
 ...
-tmp = space:create_index('secondary', { type = 'hash', parts = {1, 'num'}, unique = true })
+tmp = space:create_index('secondary', { type = 'hash', parts = {1, 'UNSIGNED'}, unique = true })
 ---
 ...
 -------------------------------------------------------------------------------

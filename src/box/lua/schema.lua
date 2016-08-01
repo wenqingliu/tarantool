@@ -4,6 +4,7 @@ local ffi = require('ffi')
 local msgpack = require('msgpack')
 local msgpackffi = require('msgpackffi')
 local fun = require('fun')
+local log = require('log')
 local session = box.session
 local internal = require('box.internal')
 
@@ -397,9 +398,9 @@ box.schema.index.create = function(space_id, name, options)
     }
     options = update_param_table(options, options_defaults)
     local type_dependent_defaults = {
-        rtree = {parts = { 2, 'array' }, unique = false},
-        bitset = {parts = { 2, 'num' }, unique = false},
-        other = {parts = { 1, 'num' }, unique = true},
+        rtree = {parts = { 2, 'NUMBER[]' }, unique = false},
+        bitset = {parts = { 2, 'UNSIGNED' }, unique = false},
+        other = {parts = { 1, 'UNSIGNED' }, unique = true},
     }
     options_defaults = type_dependent_defaults[options.type]
             and type_dependent_defaults[options.type]
@@ -442,6 +443,23 @@ box.schema.index.create = function(space_id, name, options)
         if options_template[k] == nil then
             key_opts[k] = v
         end
+    end
+    --
+    -- Convert field types names from 1.6
+    --
+    local field_types_v16 = {
+        NUM = 'UNSIGNED';
+        STR = 'STRING';
+        ARRAY = 'NUMBER[]';
+    };
+    for _, part in pairs(parts) do
+        local field_type = part[2]:upper()
+        local new_field_type = field_types_v16[field_type] or field_type
+        if field_type ~= new_field_type then
+            log.warn("field type '%s' is deprecated since Tarantool 1.7, "..
+                     "please use '%s' instead", field_type, part[2])
+        end
+        part[2] = new_field_type
     end
     _index:insert{space_id, iid, name, options.type, key_opts, parts}
     return box.space[space_id].index[name]

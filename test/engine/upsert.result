@@ -11,7 +11,7 @@ engine = inspector:get_cfg('engine')
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'str'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'} })
 ---
 ...
 for key = 1, 100 do space:upsert({tostring(key), 0}, {{'+', 2, 1}}) end
@@ -360,7 +360,7 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'} })
 ---
 ...
 for key = 1, 100 do space:upsert({key, 0}, {{'+', 2, 1}}) end
@@ -709,7 +709,7 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num', 2, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED', 2, 'UNSIGNED'} })
 ---
 ...
 for key = 1, 100 do space:upsert({key, key, 0}, {{'+', 3, 1}}) end
@@ -1058,12 +1058,12 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num', 2, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED', 2, 'UNSIGNED'} })
 ---
 ...
 space:upsert({0, 'key', 0}, {{'+', 3, 1}})
 ---
-- error: 'Tuple field 2 type does not match one required by operation: expected NUM'
+- error: 'Tuple field 2 type does not match one required by operation: expected UNSIGNED'
 ...
 space:drop()
 ---
@@ -1072,7 +1072,7 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'} })
 ---
 ...
 space:upsert({0, 0}, {{'+', 1, 1}, {'+', 2, 1}})
@@ -1089,7 +1089,7 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num', 2, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED', 2, 'UNSIGNED'} })
 ---
 ...
 for key = 1, 100 do space:upsert(box.tuple.new{key, key, 0}, box.tuple.new{{'+', 3, 1}}) end

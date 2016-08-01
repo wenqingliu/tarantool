@@ -15,7 +15,7 @@ inspector:cmd("push filter '"..engine.."' to 'engine'")
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'str'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'} })
 ---
 ...
 for key = 1, 100 do space:replace({tostring(key)}) end
@@ -748,7 +748,7 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED'} })
 ---
 ...
 for key = 1, 100 do space:replace({key}) end
@@ -1475,7 +1475,7 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'num', 2, 'num'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'UNSIGNED', 2, 'UNSIGNED'} })
 ---
 ...
 for key = 1, 100 do space:replace({key, key}) end
@@ -2202,7 +2202,7 @@ space:drop()
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...
-index = space:create_index('primary', { type = 'tree', parts = {1, 'str'} })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'STRING'} })
 ---
 ...
 for key = 1, 100 do space:replace({tostring(key)}) end

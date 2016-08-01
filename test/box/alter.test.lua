@@ -58,15 +58,15 @@ t = _space:delete{space.id}
 space_deleted = box.space[t[1]]
 space_deleted
 space:replace{0}
-_index:insert{_space.id, 0, 'primary', 'tree', 1, 1, 0, 'num'}
-_index:replace{_space.id, 0, 'primary', 'tree', 1, 1, 0, 'num'}
-_index:insert{_index.id, 0, 'primary', 'tree', 1, 2, 0, 'num', 1, 'num'}
-_index:replace{_index.id, 0, 'primary', 'tree', 1, 2, 0, 'num', 1, 'num'}
+_index:insert{_space.id, 0, 'primary', 'tree', 1, 1, 0, 'UNSIGNED'}
+_index:replace{_space.id, 0, 'primary', 'tree', 1, 1, 0, 'UNSIGNED'}
+_index:insert{_index.id, 0, 'primary', 'tree', 1, 2, 0, 'UNSIGNED', 1, 'UNSIGNED'}
+_index:replace{_index.id, 0, 'primary', 'tree', 1, 2, 0, 'UNSIGNED', 1, 'UNSIGNED'}
 _index:select{}
 -- modify indexes of a system space
 _index:delete{_index.id, 0}
 _space:insert{1000, ADMIN, 'hello', 'memtx', 0}
-_index:insert{1000, 0, 'primary', 'tree', 1, 1, 0, 'num'}
+_index:insert{1000, 0, 'primary', 'tree', 1, 1, 0, 'UNSIGNED'}
 box.space[1000]:insert{0, 'hello, world'}
 box.space[1000]:drop()
 box.space[1000]
@@ -135,7 +135,7 @@ auto:drop()
 -- gh-281 Crash after rename + replace + delete with multi-part index
 -- ------------------------------------------------------------------
 s = box.schema.space.create('space')
-index = s:create_index('primary', {unique = true, parts = {1, 'NUM', 2, 'STR'}})
+index = s:create_index('primary', {unique = true, parts = {1, 'UNSIGNED', 2, 'STRING'}})
 s:insert{1, 'a'}
 box.space.space.index.primary:rename('secondary')
 box.space.space:replace{1,'The rain in Spain'}
@@ -150,10 +150,10 @@ s = box.schema.space.create(42)
 s = box.schema.space.create("test", "bug")
 s = box.schema.space.create("test", {unknown = 'param'})
 s = box.schema.space.create("test")
-index = s:create_index('primary', {unique = true, parts = {0, 'NUM', 1, 'STR'}})
-index = s:create_index('primary', {unique = true, parts = {'NUM', 1, 'STR', 2}})
+index = s:create_index('primary', {unique = true, parts = {0, 'UNSIGNED', 1, 'STRING'}})
+index = s:create_index('primary', {unique = true, parts = {'UNSIGNED', 1, 'STRING', 2}})
 index = s:create_index('primary', {unique = true, parts = 'bug'})
-index = s:create_index('test', {unique = true, parts = {1, 'NUM'}, mmap = true})
+index = s:create_index('test', {unique = true, parts = {1, 'UNSIGNED'}, mmap = true})
 s:drop()
 
 

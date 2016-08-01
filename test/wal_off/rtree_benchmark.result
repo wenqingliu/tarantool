@@ -22,7 +22,7 @@ s = box.schema.space.create('rtreebench')
 _ = s:create_index('primary')
 ---
 ...
-_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'array'}})
+_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'}})
 ---
 ...
 file:write(" *** 2D *** \n")
@@ -108,7 +108,7 @@ s = box.schema.space.create('rtreebench');
 _ = s:create_index('primary');
 ---
 ...
-_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'array'}, dimension = dimension});
+_ = s:create_index('spatial', { type = 'rtree', unique = false, parts = {2, 'NUMBER[]'}, dimension = dimension});
 ---
 ...
 file:write(" *** 8D *** \n")

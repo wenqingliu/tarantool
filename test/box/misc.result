@@ -217,7 +217,7 @@ end;
 ...
 t;
 ---
-- - 'type : NUM'
+- - 'type : UNSIGNED'
   - 'fieldno : 1'
 ...
 ----------------
@@ -655,10 +655,10 @@ test_run:cmd("clear filter")
 s = box.schema.create_space('test')
 ---
 ...
-i1 = s:create_index('test1', {parts = {1, 'num'}})
+i1 = s:create_index('test1', {parts = {1, 'UNSIGNED'}})
 ---
 ...
-i2 = s:create_index('test2', {parts = {2, 'num'}})
+i2 = s:create_index('test2', {parts = {2, 'UNSIGNED'}})
 ---
 ...
 s:insert{1, 2, 3}
