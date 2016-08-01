@@ -1437,11 +1437,6 @@ vy_status_is_active(enum vinyl_status status)
 }
 
 static inline bool
-vy_status_active(struct vy_status *s) {
-	return vy_status_is_active(vy_status(s));
-}
-
-static inline bool
 vy_status_online(struct vy_status *s) {
 	return vy_status(s) == VINYL_ONLINE;
 }
@@ -8991,6 +8986,30 @@ vy_apply_upsert_ops(const char **tuple, const char **tuple_end,
 	}
 }
 
+static int
+vy_check_key_changed(struct key_def *key_def, const char *old_tuple,
+		     const char *new_tuple)
+{
+	int old_len = mp_decode_array(&old_tuple);
+	int new_len = mp_decode_array(&new_tuple);
+	int min_len = old_len > new_len ? new_len : old_len;
+	int not_seen = key_def->part_count;
+	for (int i = 0; i < min_len; ++i) {
+		if (!key_def_contains_fieldno(key_def, i))
+			continue;
+		--not_seen;
+		if (tuple_compare_field(old_tuple, new_tuple,
+					key_def->parts[i].type))
+			return 1;
+		mp_next(&old_tuple);
+		mp_next(&new_tuple);
+	}
+	return not_seen != 0;
+}
+
+extern const char *
+space_name_by_id(uint32_t id);
+
 /*
  * Get the upserted tuple by upsert tuple and original tuple
  */
@@ -9015,7 +9034,20 @@ vy_apply_upsert(struct sv *upsert, struct sv *object, struct vinyl_index *index)
 	const char *o_tuple, *o_tuple_end, *o_ops, *o_ops_end;
 	vinyl_tuple_data_ex(key_def, o_data, o_data_end, &o_tuple, &o_tuple_end,
 			    &o_ops, &o_ops_end);
+	const char *old_tpl_data = o_tuple;
+	const char *old_tpl_data_end = o_tuple_end;
 	vy_apply_upsert_ops(&o_tuple, &o_tuple_end, u_ops, u_ops_end);
+	if (index->key_def->iid == 0) {
+		if (vy_check_key_changed(index->key_def, old_tpl_data,
+					 o_tuple)) {
+			diag_set(ClientError, ER_CANT_UPDATE_PRIMARY_KEY,
+				 index->key_def->name,
+				 space_name_by_id(index->key_def->space_id));
+			error_log(diag_last_error(diag_get()));
+			return vinyl_tuple_from_data(index, old_tpl_data,
+						     old_tpl_data_end);
+		}
+	}
 	if (!(sv_flags(object) & SVUPSERT)) {
 		/* update version */
 		assert(o_ops_end - o_ops == 0);

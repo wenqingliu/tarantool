@@ -153,7 +153,6 @@ vinyl_insert_one(VinylIndex *index, const char *tuple,
 		}
 	}
 
-	/* Tuple doesn't exists so it can be inserted. */
 	if (vinyl_replace(tx, index->db, tuple, tuple_end))
 		diag_raise();
 }
@@ -315,7 +314,8 @@ VinylSpace::executeUpdate(struct txn*, struct space *space,
 	uint32_t part_count = mp_decode_array(&key);
 	primary_key_validate(index->key_def, key, part_count);
 
-	vinyl_coget(tx, index->db, key, part_count, &old_tuple);
+	if (vinyl_coget(tx, index->db, key, part_count, &old_tuple))
+		diag_raise();
 	if (old_tuple == NULL)
 		return NULL;
 
@@ -367,21 +367,29 @@ VinylSpace::executeUpsert(struct txn*, struct space *space,
                            struct request *request)
 {
 	assert(request->index_id == 0);
-	VinylIndex *index = (VinylIndex *)index_find(space, request->index_id);
+	VinylIndex *index = (VinylIndex *)index_find_unique(space, request->index_id);
 
-	/* Check field count in tuple */
+	/* Check field count in tuple. */
 	space_validate_tuple_raw(space, request->tuple);
 
-	/* Check tuple fields */
+	/* Check tuple fields. */
 	tuple_validate_raw(space->format, request->tuple);
 
+
 	struct vinyl_tx *tx = (struct vinyl_tx *)(in_txn()->engine_tx);
-	for (uint32_t i = 0; i < space->index_count; ++i) {
-		index = (VinylIndex *)space->index[i];
-		if (vinyl_upsert(tx, index->db, request->tuple,
-				 request->tuple_end, request->ops,
-				 request->ops_end, request->index_base) < 0) {
-			diag_raise();
+	tuple_update_check_ops(request->ops, request->ops_end,
+			       request->index_base);
+	try {
+		for (uint32_t i = 0; i < space->index_count; ++i) {
+			index = (VinylIndex *)space->index[i];
+			if (vinyl_upsert(tx, index->db, request->tuple,
+					 request->tuple_end, request->ops,
+					 request->ops_end, request->index_base) < 0) {
+				diag_raise();
+			}
 		}
+	} catch (ClientError *e) {
+		say_error("UPSERT failed:");
+		e->log();
 	}
 }
