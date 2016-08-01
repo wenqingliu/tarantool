@@ -337,6 +337,14 @@ typedef struct box_function_ctx box_function_ctx_t;
 typedef int (*box_function_f)(box_function_ctx_t *ctx,
 	     const char *args, const char *args_end);
 
+/**
+ * Returns true if key_def->parts contains key_part
+ * with specified fieldno.
+ */
+bool
+key_def_contains_fieldno(const struct key_def *key_def,
+			 uint32_t fieldno);
+
 #if defined(__cplusplus)
 } /* extern "C" */
 
@@ -379,14 +387,6 @@ key_def_copy(struct key_def *to, const struct key_def *from)
 void
 key_def_set_part(struct key_def *def, uint32_t part_no,
 		 uint32_t fieldno, enum field_type type);
-
-/**
- * Returns true if key_def->parts contains key_part
- * with specified fieldno.
- */
-bool
-key_def_contains_fieldno(const struct key_def *key_def,
-			uint32_t fieldno);
 
 /** Compare two key part arrays.
  *
