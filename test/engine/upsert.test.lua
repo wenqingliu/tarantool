@@ -109,6 +109,15 @@ for key = 1, 100 do table.insert(t, space:get({key, key})) end
 t
 space:drop()
 
+-- https://github.com/tarantool/tarantool/issues/1622
+space = box.schema.space.create('test', { engine = engine, field_count = 1 })
+index = space:create_index('primary', { type = 'tree', parts = {1, 'num'} })
+space:insert({1})
+space:select{}
+space:upsert({2, 2}, {{'+', 2, 1}})
+space:upsert({1}, {{'=', 2, 10}})
+space:drop()
+
 space = box.schema.space.create('test', { engine = engine })
 index1 = space:create_index('primary', { type = 'tree', parts = {1, 'num'} })
 index2 = space:create_index('secondary', { type = 'tree', parts = {2, 'num'}, unique = false })
@@ -357,4 +366,3 @@ s = box.space.s
 'dump ' .. anything_to_string(box.space.s:select{})-- compare with (1) visually!
 
 box.space.s:drop()
-

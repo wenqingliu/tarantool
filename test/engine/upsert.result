@@ -1462,6 +1462,31 @@ t
 space:drop()
 ---
 ...
+-- https://github.com/tarantool/tarantool/issues/1622
+space = box.schema.space.create('test', { engine = engine, field_count = 1 })
+---
+...
+index = space:create_index('primary', { type = 'tree', parts = {1, 'num'} })
+---
+...
+space:insert({1})
+---
+- [1]
+...
+space:select{}
+---
+- - [1]
+...
+space:upsert({2, 2}, {{'+', 2, 1}})
+---
+- error: Tuple field count 2 does not match space 'test' field count 1
+...
+space:upsert({1}, {{'=', 2, 10}})
+---
+...
+space:drop()
+---
+...
 space = box.schema.space.create('test', { engine = engine })
 ---
 ...

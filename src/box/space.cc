@@ -37,6 +37,7 @@
 #include "user_def.h"
 #include "user.h"
 #include "session.h"
+#include "schema.h"
 
 void
 access_check_space(struct space *space, uint8_t access)
@@ -182,6 +183,18 @@ space_validate_tuple(struct space *sp, struct tuple *new_tuple)
 {
 	uint32_t field_count = tuple_field_count(new_tuple);
 	space_validate_field_count(sp, field_count);
+}
+
+bool
+space_validate_tuple_raw_by_id(uint32_t space_id, const char *data)
+{
+	struct space *space = space_by_id(space_id);
+	try {
+		space_validate_tuple_raw(space, data);
+	} catch (ClientError *) {
+		return false;
+	}
+	return true;
 }
 
 void
