@@ -881,10 +881,6 @@ update_read_ops(struct tuple_update *update, const char *expr,
 		tnt_raise(IllegalParams, "too many operations for update");
 	if (update->op_count == 0)
 		tnt_raise(IllegalParams, "no operations for update");
-	if (mp_typeof(*expr) != MP_ARRAY)
-		tnt_raise(IllegalParams,
-			  "update operations"
-			  " must be an array {{op,..}, {op,..}}");
 
 	/* Read update operations.  */
 	update->ops = (struct update_op *) update->alloc(update->alloc_ctx,
@@ -892,6 +888,10 @@ update_read_ops(struct tuple_update *update, const char *expr,
 	struct update_op *op = update->ops;
 	struct update_op *ops_end = op + update->op_count;
 	for (; op < ops_end; op++) {
+		if (mp_typeof(*expr) != MP_ARRAY)
+			tnt_raise(IllegalParams,
+				  "update operations"
+				  " must be an array {op,..}");
 		/* Read operation */
 		uint32_t args, len;
 		args = mp_decode_array(&expr);
@@ -991,13 +991,13 @@ tuple_update_check_ops(const char *expr, const char *expr_end, int index_base)
 		tnt_raise(IllegalParams, "too many operations for update");
 	if (op_count == 0)
 		tnt_raise(IllegalParams, "no operations for update");
-	if (mp_typeof(*expr) != MP_ARRAY)
-		tnt_raise(IllegalParams,
-			  "update operations"
-			  " must be an array {{op,..}, {op,..}}");
 
 	struct update_op op;
 	for (int i = 0; i < op_count; ++i) {
+		if (mp_typeof(*expr) != MP_ARRAY)
+			tnt_raise(IllegalParams,
+				  "update operation"
+				  " must be an array {op,..}");
 		/* Read operation */
 		uint32_t args, len;
 		args = mp_decode_array(&expr);
