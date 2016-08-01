@@ -936,7 +936,7 @@ update_do_ops(struct tuple_update *update)
 }
 
 static void
-upsert_do_ops(struct tuple_update *update)
+upsert_do_ops(struct tuple_update *update, bool suppress_error)
 {
 	struct update_op *op = update->ops;
 	struct update_op *ops_end = op + update->op_count;
@@ -944,8 +944,10 @@ upsert_do_ops(struct tuple_update *update)
 		try {
 			op->meta->do_op(update, op);
 		} catch (ClientError *e) {
-			say_error("UPSERT operation failed:");
-			e->log();
+			if (!suppress_error) {
+				say_error("UPSERT operation failed:");
+				e->log();
+			}
 		}
 	}
 }
@@ -1001,7 +1003,7 @@ const char *
 tuple_upsert_execute(tuple_update_alloc_func alloc, void *alloc_ctx,
 		     const char *expr,const char *expr_end,
 		     const char *old_data, const char *old_data_end,
-		     uint32_t *p_tuple_len, int index_base)
+		     uint32_t *p_tuple_len, int index_base, bool suppress_error)
 {
 	try {
 		struct tuple_update update;
@@ -1009,7 +1011,7 @@ tuple_upsert_execute(tuple_update_alloc_func alloc, void *alloc_ctx,
 			    index_base);
 
 		update_read_ops(&update, expr, expr_end);
-		upsert_do_ops(&update);
+		upsert_do_ops(&update, suppress_error);
 
 		return update_finish(&update, p_tuple_len);
 	} catch (Exception *e) {

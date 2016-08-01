@@ -2106,7 +2106,7 @@ struct svreaditer {
 
 static struct vinyl_tuple *
 vy_apply_upsert(struct sv *upsert, struct sv *object,
-		struct vinyl_index *index);
+		struct vinyl_index *index, bool suppress_error);
 
 static inline int
 sv_readiter_upsert(struct svreaditer *i)
@@ -2134,7 +2134,7 @@ sv_readiter_upsert(struct svreaditer *i)
 			break;
 		if (skip)
 			continue;
-		struct vinyl_tuple *up = vy_apply_upsert(v, next_v, index);
+		struct vinyl_tuple *up = vy_apply_upsert(v, next_v, index, true);
 		if (up == NULL)
 			return -1; /* memory error */
 		vinyl_tuple_unref(index, i->upsert_tuple);
@@ -2145,7 +2145,7 @@ sv_readiter_upsert(struct svreaditer *i)
 			skip = 1;
 	}
 	if (sv_flags(v) & SVUPSERT) {
-		struct vinyl_tuple *up = vy_apply_upsert(v, NULL, index);
+		struct vinyl_tuple *up = vy_apply_upsert(v, NULL, index, true);
 		if (up == NULL)
 			return -1; /* memory error */
 		vinyl_tuple_unref(index, i->upsert_tuple);
@@ -2300,7 +2300,7 @@ sv_writeiter_upsert(struct svwriteiter *i)
 			continue;
 		last_non_upd = ! sv_isflags(flags, SVUPSERT);
 
-		struct vinyl_tuple *up = vy_apply_upsert(v, next_v, index);
+		struct vinyl_tuple *up = vy_apply_upsert(v, next_v, index, false);
 		if (up == NULL)
 			return -1; /* memory error */
 		vinyl_tuple_unref(index, i->upsert_tuple);
@@ -2309,7 +2309,7 @@ sv_writeiter_upsert(struct svwriteiter *i)
 		v = &i->upsert_sv;
 	}
 	if (sv_flags(v) & SVUPSERT) {
-		struct vinyl_tuple *up = vy_apply_upsert(v, NULL, index);
+		struct vinyl_tuple *up = vy_apply_upsert(v, NULL, index, false);
 		if (up == NULL)
 			return -1; /* memory error */
 		vinyl_tuple_unref(index, i->upsert_tuple);
@@ -8955,7 +8955,8 @@ vinyl_update_alloc(void *arg, size_t size)
  */
 static void
 vy_apply_upsert_ops(const char **tuple, const char **tuple_end,
-		    const char *ops, const char *ops_end)
+		    const char *ops, const char *ops_end,
+		    bool suppress_error)
 {
 	uint64_t series_count = mp_decode_uint(&ops);
 	assert(series_count > 0);
@@ -8981,7 +8982,7 @@ vy_apply_upsert_ops(const char **tuple, const char **tuple_end,
 		result = tuple_upsert_execute(vinyl_update_alloc, NULL,
 					      ops, serie_end,
 					      *tuple, *tuple_end,
-					      &size, index_base);
+					      &size, index_base, suppress_error);
 		if (result != NULL) {
 			/* if failed, just skip it and leave tuple the same */
 			*tuple = result;
@@ -8995,7 +8996,8 @@ vy_apply_upsert_ops(const char **tuple, const char **tuple_end,
  * Get the upserted tuple by upsert tuple and original tuple
  */
 static struct vinyl_tuple *
-vy_apply_upsert(struct sv *upsert, struct sv *object, struct vinyl_index *index)
+vy_apply_upsert(struct sv *upsert, struct sv *object, struct vinyl_index *index,
+		bool suppress_error)
 {
 	assert(upsert != object);
 	struct key_def *key_def = index->key_def;
@@ -9015,7 +9017,8 @@ vy_apply_upsert(struct sv *upsert, struct sv *object, struct vinyl_index *index)
 	const char *o_tuple, *o_tuple_end, *o_ops, *o_ops_end;
 	vinyl_tuple_data_ex(key_def, o_data, o_data_end, &o_tuple, &o_tuple_end,
 			    &o_ops, &o_ops_end);
-	vy_apply_upsert_ops(&o_tuple, &o_tuple_end, u_ops, u_ops_end);
+	vy_apply_upsert_ops(&o_tuple, &o_tuple_end, u_ops, u_ops_end,
+			    suppress_error);
 	if (!(sv_flags(object) & SVUPSERT)) {
 		/* update version */
 		assert(o_ops_end - o_ops == 0);

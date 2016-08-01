@@ -374,3 +374,54 @@ s:select()
 s:drop()
 ---
 ...
+--
+-- gh-1571: vinyl upsert with bad update should not log
+--
+s = box.schema.space.create('t',{engine='vinyl'})
+---
+...
+s:create_index('primary',{})
+---
+- unique: true
+  parts:
+  - type: NUM
+    fieldno: 1
+  id: 0
+  space_id: 527
+  name: primary
+  type: TREE
+...
+s:insert{1}
+---
+- [1]
+...
+s:replace{1,2}
+---
+- [1, 2]
+...
+s:upsert({1},{{'=',4,5}})
+---
+...
+s:select{}
+---
+- - [1, 2]
+...
+s:select{}
+---
+- - [1, 2]
+...
+test_run:grep_log('default', 'UPSERT operation failed') == nil
+---
+- true
+...
+box:snapshot()
+---
+- ok
+...
+test_run:grep_log('default', 'UPSERT operation failed') ~= nil
+---
+- true
+...
+s:drop()
+---
+...
