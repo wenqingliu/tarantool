@@ -377,19 +377,15 @@ VinylSpace::executeUpsert(struct txn*, struct space *space,
 
 
 	struct vinyl_tx *tx = (struct vinyl_tx *)(in_txn()->engine_tx);
-	tuple_update_check_ops(request->ops, request->ops_end,
+	tuple_update_check_ops(region_aligned_alloc_xc_cb, &fiber()->gc,
+			       request->ops, request->ops_end,
 			       request->index_base);
-	try {
-		for (uint32_t i = 0; i < space->index_count; ++i) {
-			index = (VinylIndex *)space->index[i];
-			if (vinyl_upsert(tx, index->db, request->tuple,
-					 request->tuple_end, request->ops,
-					 request->ops_end, request->index_base) < 0) {
-				diag_raise();
-			}
+	for (uint32_t i = 0; i < space->index_count; ++i) {
+		index = (VinylIndex *)space->index[i];
+		if (vinyl_upsert(tx, index->db, request->tuple,
+				 request->tuple_end, request->ops,
+				 request->ops_end, request->index_base) < 0) {
+			diag_raise();
 		}
-	} catch (ClientError *e) {
-		say_error("UPSERT failed:");
-		e->log();
 	}
 }

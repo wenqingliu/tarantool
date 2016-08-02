@@ -890,7 +890,7 @@ update_read_ops(struct tuple_update *update, const char *expr,
 	for (; op < ops_end; op++) {
 		if (mp_typeof(*expr) != MP_ARRAY)
 			tnt_raise(IllegalParams,
-				  "update operations"
+				  "update operation"
 				  " must be an array {op,..}");
 		/* Read operation */
 		uint32_t args, len;
@@ -926,8 +926,10 @@ update_read_ops(struct tuple_update *update, const char *expr,
 }
 
 static void
-update_do_ops(struct tuple_update *update)
+update_do_ops(struct tuple_update *update, const char *old_data,
+	      const char *old_data_end)
 {
+	update_create_rope(update, old_data, old_data_end);
 	struct update_op *op = update->ops;
 	struct update_op *ops_end = op + update->op_count;
 	for (; op < ops_end; op++) {
@@ -936,8 +938,10 @@ update_do_ops(struct tuple_update *update)
 }
 
 static void
-upsert_do_ops(struct tuple_update *update)
+upsert_do_ops(struct tuple_update *update, const char *old_data,
+	      const char *old_data_end)
 {
+	update_create_rope(update, old_data, old_data_end);
 	struct update_op *op = update->ops;
 	struct update_op *ops_end = op + update->op_count;
 	for (; op < ops_end; op++) {
@@ -953,7 +957,6 @@ upsert_do_ops(struct tuple_update *update)
 static void
 update_init(struct tuple_update *update,
 	    tuple_update_alloc_func alloc, void *alloc_ctx,
-	    const char *old_data, const char *old_data_end,
 	    int index_base)
 {
 	memset(update, 0, sizeof(*update));
@@ -964,8 +967,6 @@ update_init(struct tuple_update *update,
 	 * error messages. All fields numbers must be zero-based!
 	 */
 	update->index_base = index_base;
-
-	update_create_rope(update, old_data, old_data_end);
 }
 
 const char *
@@ -978,57 +979,12 @@ update_finish(struct tuple_update *update, uint32_t *p_tuple_len)
 }
 
 void
-tuple_update_check_ops(const char *expr, const char *expr_end, int index_base)
+tuple_update_check_ops(tuple_update_alloc_func alloc, void *alloc_ctx,
+		       const char *expr, const char *expr_end, int index_base)
 {
-	if (mp_typeof(*expr) != MP_ARRAY)
-		tnt_raise(IllegalParams,
-			  "update operations must be an "
-			  "array {{op,..}, {op,..}}");
-	/* number of operations */
-	int op_count = mp_decode_array(&expr);
-
-	if (op_count > BOX_UPDATE_OP_CNT_MAX)
-		tnt_raise(IllegalParams, "too many operations for update");
-	if (op_count == 0)
-		tnt_raise(IllegalParams, "no operations for update");
-
-	struct update_op op;
-	for (int i = 0; i < op_count; ++i) {
-		if (mp_typeof(*expr) != MP_ARRAY)
-			tnt_raise(IllegalParams,
-				  "update operation"
-				  " must be an array {op,..}");
-		/* Read operation */
-		uint32_t args, len;
-		args = mp_decode_array(&expr);
-		if (args < 1)
-			tnt_raise(IllegalParams,
-				  "update operation must be an "
-				  "array {op,..}, got empty array");
-		if (mp_typeof(*expr) != MP_STR)
-			tnt_raise(IllegalParams,
-				  "update operation name must be a string");
-
-		op.opcode = *mp_decode_str(&expr, &len);
-		op.meta = get_update_by_sym(op.opcode);
-		if (args != op.meta->args)
-			tnt_raise(ClientError, ER_UNKNOWN_UPDATE_OP);
-		if (mp_typeof(*expr) != MP_INT && mp_typeof(*expr) != MP_UINT)
-			tnt_raise(IllegalParams, "field id must be a number");
-		int32_t field_no = mp_read_int(index_base, &op, &expr);
-		if (field_no - index_base >= 0) {
-			op.field_no = field_no - index_base;
-		} else if (field_no < 0) {
-			op.field_no = field_no;
-		} else {
-			tnt_raise(ClientError, ER_NO_SUCH_FIELD, field_no);
-		}
-		op.meta->read_arg(index_base, &op, &expr);
-	}
-
-	/* Check the remainder length, the request must be fully read. */
-	if (expr != expr_end)
-		tnt_raise(IllegalParams, "can't unpack update operations");
+	struct tuple_update update;
+	update_init(&update, alloc, alloc_ctx, index_base);
+	update_read_ops(&update, expr, expr_end);
 }
 
 const char *
@@ -1039,11 +995,10 @@ tuple_update_execute(tuple_update_alloc_func alloc, void *alloc_ctx,
 {
 	try {
 		struct tuple_update update;
-		update_init(&update, alloc, alloc_ctx, old_data, old_data_end,
-			    index_base);
+		update_init(&update, alloc, alloc_ctx, index_base);
 
 		update_read_ops(&update, expr, expr_end);
-		update_do_ops(&update);
+		update_do_ops(&update, old_data, old_data_end);
 
 		return update_finish(&update, p_tuple_len);
 	} catch (Exception *e) {
@@ -1059,11 +1014,10 @@ tuple_upsert_execute(tuple_update_alloc_func alloc, void *alloc_ctx,
 {
 	try {
 		struct tuple_update update;
-		update_init(&update, alloc, alloc_ctx, old_data, old_data_end,
-			    index_base);
+		update_init(&update, alloc, alloc_ctx, index_base);
 
 		update_read_ops(&update, expr, expr_end);
-		upsert_do_ops(&update);
+		upsert_do_ops(&update, old_data, old_data_end);
 
 		return update_finish(&update, p_tuple_len);
 	} catch (Exception *e) {
