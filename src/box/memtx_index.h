@@ -47,6 +47,8 @@ public:
 				  uint32_t part_count) const override;
 	virtual size_t count(enum iterator_type type, const char *key,
 			     uint32_t part_count) const override;
+	virtual bool open() override { return true; }
+	virtual void close() override { }
 
 	inline struct iterator *position() const
 	{

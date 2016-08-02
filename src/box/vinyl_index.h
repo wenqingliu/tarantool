@@ -59,6 +59,10 @@ public:
 
 	virtual size_t bsize() const override;
 
+	virtual bool open() override;
+
+	virtual void close() override;
+
 	virtual struct tuple *min(const char *key,
 					uint32_t part_count) const override;
 
@@ -73,6 +77,7 @@ public:
 public:
 	struct vinyl_env *env;
 	struct vinyl_index *db;
+	bool is_open;
 private:
 	struct tuple_format *format;
 };

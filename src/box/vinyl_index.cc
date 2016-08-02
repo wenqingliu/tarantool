@@ -96,19 +96,33 @@ merge_key_defs(struct key_def *first, struct key_def *second)
 }
 
 VinylIndex::VinylIndex(struct key_def *key_def_arg)
-	: Index(key_def_arg)
+	: Index(key_def_arg), db(NULL), is_open(false)
 {
 	struct space *space = space_cache_find(key_def->space_id);
 	VinylEngine *engine =
 		(VinylEngine *)space->handler->engine;
 	env = engine->env;
-	int rc;
+	format = space->format;
+	tuple_format_ref(format, 1);
+}
+
+bool
+VinylIndex::open()
+{
+	if (is_open)
+		return false;
+	struct space *space;
 	struct key_def *vinyl_key_def = key_def;
 	auto guard = make_scoped_guard([&]{
 		if (vinyl_key_def != key_def) {
 			key_def_delete(vinyl_key_def);
 		}
         });
+	if (db != NULL) {
+		/* The index object exists but is not opened. */
+		goto index_exists;
+	}
+	space = space_cache_find(key_def->space_id);
 	/*
 	 * If the index is not unique, add primary key
 	 * to the end of parts.
@@ -118,40 +132,35 @@ VinylIndex::VinylIndex(struct key_def *key_def_arg)
 		/* Allocates a new (temporary) key_def */
 		vinyl_key_def = merge_key_defs(key_def, primary->key_def);
 	}
-	char name[128];
-	snprintf(name, sizeof(name), "%d:%d", key_def->space_id, key_def->iid);
-	db = vinyl_index_by_name(env, name);
-	if (db != NULL) {
-		if (key_def_cmp(vinyl_key_def, vy_index_key_def(db)))
-			diag_raise();
-		db = NULL;
-		goto index_exists;
-	}
-	/* Create database. */
+	/* Create vinyl database. */
 	db = vinyl_index_new(env, vinyl_key_def, space->format);
 	if (db == NULL)
 		diag_raise();
-	/* Start two-phase recovery if the index exists. */
-	rc = vinyl_index_open(db);
-	if (rc == -1)
-		diag_raise();
 index_exists:
-	format = space->format;
-	tuple_format_ref(format, 1);
+	if (vinyl_index_open(db))
+		diag_raise();
+	is_open = true;
+	return true;
+}
+
+void
+VinylIndex::close()
+{
+	if (!is_open)
+		return;
+	if (vinyl_index_close(db)) {
+		say_info("vinyl space %" PRIu32 " close error: %s",
+			 key_def->space_id, diag_last_error(diag_get())->errmsg);
+	} else {
+		is_open = false;
+	}
 }
 
 VinylIndex::~VinylIndex()
 {
 	if (db == NULL)
 		return;
-	/* schedule database shutdown */
-	int rc = vinyl_index_close(db);
-	if (rc == -1)
-		goto error;
-	return;
-error:;
-	say_info("vinyl space %" PRIu32 " close error: %s",
-			 key_def->space_id, diag_last_error(diag_get())->errmsg);
+	close();
 }
 
 size_t

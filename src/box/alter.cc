@@ -1103,6 +1103,13 @@ void
 AddIndex::alter(struct alter_space *alter)
 {
 	Engine *engine = alter->new_space->handler->engine;
+	/* Open the new index. */
+	Index *new_index = index_find(alter->new_space, new_key_def->iid);
+	if (!new_index->open()) {
+		tnt_raise(ClientError, ER_ALTER_SPACE,
+			  space_name(alter->new_space),
+			  "can not open new index");
+	}
 	if (space_index(alter->old_space, 0) == NULL) {
 		if (new_key_def->iid == 0) {
 			/*
@@ -1134,7 +1141,6 @@ AddIndex::alter(struct alter_space *alter)
 		return;
 
 	Index *pk = index_find(alter->old_space, 0);
-	Index *new_index = index_find(alter->new_space, new_key_def->iid);
 
 	/* Now deal with any kind of add index during normal operation. */
 	struct iterator *it = pk->allocIterator();

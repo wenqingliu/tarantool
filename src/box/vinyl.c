@@ -579,13 +579,6 @@ vy_buf_at(struct vy_buf *b, int size, int i) {
 	return b->s + size * i;
 }
 
-static inline void
-vy_buf_set(struct vy_buf *b, int size, int i, char *buf, size_t bufsize)
-{
-	assert(b->s + (size * i + bufsize) <= b->p);
-	memcpy(b->s + size * i, buf, bufsize);
-}
-
 #define VINYL_INJECTION_SD_BUILD_0      0
 #define VINYL_INJECTION_SD_BUILD_1      1
 #define VINYL_INJECTION_SI_BRANCH_0     2
@@ -898,12 +891,6 @@ static inline int
 vy_bufiter_has(struct vy_bufiter *bi)
 {
 	return bi->v != NULL;
-}
-
-static inline void *
-vy_bufiter_get(struct vy_bufiter *bi)
-{
-	return bi->v;
 }
 
 static inline void*
@@ -1434,11 +1421,6 @@ vy_status_is_active(enum vinyl_status status)
 	}
 	unreachable();
 	return 0;
-}
-
-static inline bool
-vy_status_active(struct vy_status *s) {
-	return vy_status_is_active(vy_status(s));
 }
 
 static inline bool
@@ -8519,7 +8501,7 @@ vinyl_index_delete(struct vinyl_index *index)
 	return rc_ret;
 }
 
-struct vinyl_index *
+static struct vinyl_index *
 vinyl_index_by_name(struct vinyl_env *e, const char *name)
 {
 	struct vinyl_index *index;

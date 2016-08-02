@@ -50,6 +50,8 @@ public:
 				  enum iterator_type type,
 				  const char *key,
 				  uint32_t part_count) const override;
+	virtual bool open() override { return true; }
+	virtual void close() override { }
 
 	uint32_t source_space_id;
 	uint32_t source_index_id;
